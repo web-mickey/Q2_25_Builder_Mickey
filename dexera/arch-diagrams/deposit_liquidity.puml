@@ -1,0 +1,62 @@
+@startuml deposit_liquidity
+title Deposit Liquidity
+
+start
+
+:Program;
+
+:deposit_liquidity(lp_tokens_amount: u64, max_x_tokens: u64, max_y_tokens: u64);
+
+note right
+Accounts:
+- depositor (signer)
+- mint_x
+- mint_y
+- mint_lp
+  - seeds [b"lp", pool.key()]
+  - bump = pool.mint_lp_bump
+- pool_vault_x_ata
+  - mint = mint_x
+  - authority = pool
+- pool_vault_y_ata
+  - mint = mint_y
+  - authority = pool
+- depositor_mint_x_ata
+- depositor_mint_y_ata
+- depositor_mint_lp_ata
+  - init_if_needed
+  - mint = mint_lp
+  - authority = depositor
+- pool
+  - seeds [b"pool", mint_x.key(), mint_y.key()]
+  - bump = pool.pool_bump
+- token program
+- associated token program
+- system program
+end note
+
+if (Pool locked?) then (yes)
+  :Throw AMMLocked error;
+  stop
+else (no)
+  :Calculate deposit amounts;
+
+  note right
+Uses constant_product_curve lib to calculate:
+- amount_x
+- amount_y
+end note
+
+  if (amounts.x > max_x_tokens or amounts.y > max_y_tokens?) then (yes)
+    :Throw InsufficientToken error;
+    stop
+  else (no)
+    :Transfer token X from depositor to pool;
+    :Transfer token Y from depositor to pool;
+    :Mint LP tokens to depositor;
+  endif
+endif
+
+stop
+
+@enduml 

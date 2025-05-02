@@ -1,0 +1,65 @@
+@startuml withdraw_liquidity
+title Withdraw Liquidity
+
+start
+
+:Program;
+
+:withdraw_liquidity();
+
+note right
+Accounts:
+- withdrawer (signer)
+- mint_x
+- mint_y
+- mint_lp
+  - seeds [b"lp", pool.key()]
+  - bump = pool.mint_lp_bump
+- pool_vault_x_ata
+  - mint = mint_x
+  - authority = pool
+- pool_vault_y_ata
+  - mint = mint_y
+  - authority = pool
+- pool_mint_lp_ata
+  - mint = mint_lp
+  - authority = pool
+- withdrawer_mint_lp_ata
+  - init_if_needed
+  - mint = mint_lp
+  - authority = withdrawer
+- withdrawer_mint_x_ata
+  - init_if_needed
+  - mint = mint_x
+  - authority = withdrawer
+- withdrawer_mint_y_ata
+  - init_if_needed
+  - mint = mint_y
+  - authority = withdrawer
+- pool
+  - seeds [b"pool", mint_x.key(), mint_y.key()]
+  - bump = pool.pool_bump
+- token program
+- associated token program
+- system program
+end note
+
+:Calculate withdrawal amounts;
+
+note right
+Uses constant_product_curve lib to calculate:
+- amount_x
+- amount_y
+end note
+
+if (amounts.x < min_x or amounts.y < min_y?) then (yes)
+  :Throw InsufficientToken error;
+  stop
+else (no)
+  :Transfer tokens from pool to withdrawer;
+  :Burn LP tokens;
+endif
+
+stop
+
+@enduml

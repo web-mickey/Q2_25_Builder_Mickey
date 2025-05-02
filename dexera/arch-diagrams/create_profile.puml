@@ -1,0 +1,36 @@
+@startuml create_profile
+title Create Profile
+
+start
+
+:Program;
+
+:create_profile(profile_id: u64);
+
+note right
+Accounts:
+- creator (signer)
+- profile
+  - init
+  - seeds [b"profile", creator.key()]
+  - space = Profile::INIT_SPACE
+- system program
+end note
+
+:Get current timestamp;
+
+:Create profile account;
+
+note right
+State:
+- profile_id u64 (from instruction)
+- creator Pubkey
+- created_timestamp i64 (current time)
+- expiration_timestamp i64 (current time + 30 days)
+- locked bool (initialized to false)
+- profile_bump u8
+end note
+
+stop
+
+@enduml

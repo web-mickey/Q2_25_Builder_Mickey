@@ -1,0 +1,34 @@
+@startuml initialize_protocol
+title Initialize Protocol
+
+start
+
+:Program;
+
+:initialize_protocol();
+
+note right
+Accounts:
+- admin (signer)
+- config
+  - init
+  - seeds [b"config"]
+  - space = ProtocolConfig::INIT_SPACE
+- protocol_fee_account
+  - unchecked account
+- system program
+end note
+
+:Create config account;
+
+note right
+State:
+- admin Pubkey
+- protocol_fee_account Pubkey
+- config_bump u8
+- fee u16
+end note
+
+stop
+
+@enduml 
