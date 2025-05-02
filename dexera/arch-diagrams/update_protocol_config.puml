@@ -1,0 +1,31 @@
+@startuml update_protocol_config
+title Update Protocol Config
+
+start
+
+:Program;
+
+:update_protocol_fee_account();
+
+note right
+Accounts:
+- admin (signer)
+- config
+  - has_one = admin
+  - seeds [b"config"]
+  - bump = config.config_bump
+- protocol_fee_account
+  - unchecked account
+- system program
+end note
+
+:Update protocol fee account;
+
+note right
+Updates:
+- config.protocol_fee_account = new_protocol_fee_account
+end note
+
+stop
+
+@enduml 

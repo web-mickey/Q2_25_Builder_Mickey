@@ -1,0 +1,77 @@
+@startuml swap_tokens
+title Swap Tokens
+
+start
+
+:Program;
+
+:swap_exact_in() or swap_exact_out();
+
+note right
+Accounts:
+- user (signer)
+- mint_x
+- mint_y
+- mint_lp
+  - seeds [b"lp", pool.key()]
+  - bump = pool.mint_lp_bump
+- profile (optional)
+- config
+  - seeds [b"config"]
+  - bump
+- pool_vault_x_ata
+  - mint = mint_x
+  - authority = pool
+- pool_vault_y_ata
+  - mint = mint_y
+  - authority = pool
+- user_mint_x_ata
+- user_mint_y_ata
+  - init_if_needed
+  - mint = mint_y
+  - authority = user
+- pool
+  - seeds [b"pool", mint_x.key(), mint_y.key()]
+  - bump = pool.pool_bump
+- referrer_ata (optional)
+- token program
+- associated token program
+- system program
+end note
+
+if (Pool locked?) then (yes)
+  :Throw AMMLocked error;
+  stop
+else (no)
+  :Initialize constant product curve;
+  
+  if (swap_exact_in?) then (yes)
+    :Calculate swap amounts for exact input;
+  else (no)
+    :Calculate swap amounts for exact output;
+  endif
+  
+  :Check slippage;
+  
+  if (Slippage exceeded?) then (yes)
+    :Throw SlippageExceeded error;
+    stop
+  else (no)
+    :Transfer tokens from user to pool;
+    :Transfer tokens from pool to user;
+    
+    if (Fee > 0?) then (yes)
+      :Calculate referral and protocol fees;
+      
+      if (Referrer exists?) then (yes)
+        :Transfer referral fee;
+      endif
+      
+      :Transfer protocol fee;
+    endif
+  endif
+endif
+
+stop
+
+@enduml 

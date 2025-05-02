@@ -147,7 +147,7 @@ impl InitializePool<'_> {
         self.deposit_token(true, max_x)?;
         self.deposit_token(false, max_y)?;
 
-        self.mint_lp_tokens(amount, self.pool_state.id)
+        self.mint_lp_tokens(amount)
     }
 
     pub fn deposit_token(&self, is_x: bool, amount: u64) -> Result<()> {
@@ -180,7 +180,7 @@ impl InitializePool<'_> {
         transfer_checked(cpi_context, amount, decimals)
     }
 
-    pub fn mint_lp_tokens(&self, amount: u64, pool_id: u64) -> Result<()> {
+    pub fn mint_lp_tokens(&self, amount: u64) -> Result<()> {
         let cpi_program = self.token_program.to_account_info();
 
         let cpi_accounts = MintTo {
@@ -196,7 +196,7 @@ impl InitializePool<'_> {
             b"pool",
             mint_x_bytes.as_ref(),
             mint_y_bytes.as_ref(),
-            &pool_id.to_le_bytes()[..],
+            &self.pool_state.id.to_le_bytes(),
             &[self.pool_state.pool_bump],
         ];
 

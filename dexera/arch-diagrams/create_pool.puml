@@ -1,0 +1,81 @@
+@startuml create_pool
+title Create Pool
+
+start
+
+:Program;
+
+:create_pool();
+
+note right
+Accounts:
+- creator (signer)
+- mint_x
+- mint_y
+- mint_lp
+  - init
+  - seeds [b"lp", pool.key()]
+  - bump
+  - mint::decimals = 6
+  - mint::authority = pool
+- pool_vault_x_ata
+  - init
+  - mint = mint_x
+  - authority = pool
+- pool_vault_y_ata
+  - init
+  - mint = mint_y
+  - authority = pool
+- pool_mint_lp_ata
+  - init
+  - mint = mint_lp
+  - authority = pool
+- creator_mint_x_ata
+- creator_mint_y_ata
+- creator_mint_lp_ata
+  - init
+  - mint = mint_lp
+  - authority = creator
+- pool
+  - init
+  - seeds [b"pool", mint_x.key(), mint_y.key()]
+  - space = Pool::INIT_SPACE
+  - bump
+- token program
+- associated token program
+- system program
+end note
+
+if (Pool already initialized?) then (yes)
+  :Anchor throws error;
+  stop
+else (no)
+  :Create pool state account;
+
+  note right
+State:
+- creator Pubkey
+- mint_x Pubkey
+- mint_y Pubkey
+- mint_lp Pubkey
+- pool_bump u8
+- mint_lp_bump u8
+- locked bool (initialized to false)
+end note
+
+  :Deposit initial liquidity;
+
+  note right
+Initial deposit:
+- 1,000,000 LP tokens
+- 1,000,000 token X
+- 1,000,000 token Y
+end note
+
+  :Transfer tokens from creator to pool;
+  :Mint LP tokens to creator;
+endif
+
+stop
+
+@enduml
